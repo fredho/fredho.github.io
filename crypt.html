@@ -1,0 +1,162 @@
+<html class="" lang="en"><head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Crypto</title>
+	<link rel="stylesheet" href="http://dhbhdrzi4tiry.cloudfront.net/cdn/sites/foundation.min.css">
+	<link href="http://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" type="text/css" href="assets/css/crypto.css">
+	<body>
+		</script>
+		<script type="text/javascript" src="assets/js/md5.js"></script>
+		<script src="assets/js/aes.js"></script>
+		<script src="assets/js/jquery-2.1.4.min.js"></script>
+		<script type="text/javascript">
+			function encryptText(inputText) {
+				if ($(".salt-checkbox:checked").val() === "randomSalt") {
+					$(".encrypt-result-salt").show();
+					var saltToBeUsed = makeId();
+					$(".encrypt-result-salt-output").text(saltToBeUsed);
+					return CryptoJS.AES.encrypt(inputText, saltToBeUsed);
+				}
+				else {
+					$(".encrypt-result-salt").hide();
+				}
+				return CryptoJS.AES.encrypt(inputText, "RandomSaltPutHere");
+			}
+			function decryptText(inputText, customSalt) {
+				if ($(".salt-checkbox:checked").val() === "randomSalt") {
+					return CryptoJS.AES.decrypt(inputText, customSalt);
+				}
+				else {
+					$(".encrypt-result-salt").hide();
+				}				
+				return CryptoJS.AES.decrypt(inputText, "RandomSaltPutHere");
+			}
+			function encryptIsChecked() {
+				return $(".radio-button:checked").val() === "encrypt";
+			}
+			function hex2a(hexx) {
+			    var hex = hexx.toString();//force conversion
+			    var str = '';
+			    for (var i = 0; i < hex.length; i += 2)
+			        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+			    return str;
+			}
+			function makeId() {
+			    var text = "";
+			    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+			    for( var i=0; i < 8; i++ )
+			        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+			    return text;
+			}
+			function encryptOrDecrypt() {
+				var inputText = $(".inputText").val();
+				if (encryptIsChecked()) {
+					var output = encryptText(inputText);
+				}
+				else {
+					if ($(".salt-checkbox:checked").val() === "randomSalt") {
+						var output = hex2a(decryptText(inputText, $(".inputSalt").val()));
+						$(".encrypt-result-salt").hide();
+				    }
+				    else {
+				    	var output = hex2a(decryptText(inputText));
+				    }
+				}
+				$(".encrypt-decrypt-output").text(output);	
+			}
+			$(document).ready(function() {
+				$(".blue.button").on("click", function() {
+					if($(".inputText").val() !== "" && $(".inputText").val() !== null && $(".inputText").val() !== undefined) {
+						encryptOrDecrypt();
+					}
+				})
+				$("body").keypress(function (e) {
+					var key = e.which;
+					if(key == 13 && $(".inputText").val() !== "" && $(".inputText").val() !== null && $(".inputText").val() !== undefined) {
+						$('.blue.button').click();
+						e.preventDefault();
+					}
+				});   
+				$(".salt-checkbox").change(function() {
+				    if (!($(".salt-checkbox:checked").val() === "randomSalt")) {
+				       $(".encrypt-result-salt").hide();
+				       $(".decrypt-input-custom-salt").hide();
+				       $(".encrypt-decrypt-output").text("...");
+				       $(".encrypt-result-salt-output").text("...");
+				    }
+				    else {
+				    	$(".encrypt-result-salt").show();
+				    	if (!encryptIsChecked()) {
+				    		$('.decrypt-input-custom-salt').show();
+				    	}
+				    }
+				});
+				$(".radio-button").change(function() {
+					if (encryptIsChecked()) {
+						$(".encrypt-or-decrypt-text").text("encrypted");
+						$(".decrypt-input-custom-salt").hide();	
+						$(".encrypt-result-salt").hide();
+					}
+					else {
+						$(".encrypt-or-decrypt-text").text("decrypted");
+						if ($(".salt-checkbox:checked").val() === "randomSalt") {
+							$(".decrypt-input-custom-salt").show()
+						}
+						else {
+							$(".decrypt-input-custom-salt").hide();	
+						}
+					}
+				})
+				$(".inputText").change(function() {
+					if ($(".inputText").val() === "" || $(".inputText").val() === null || $(".inputText").val() === undefined) {
+						$(".encrypt-decrypt-output").text("...");
+						$(".encrypt-result-salt-output").text("...");
+					}
+				});
+			});
+		</script>
+		<div class="top-bar">
+			<div class="top-bar-left">
+				<ul class="menu">
+					<li class="menu-text"><a class="blue button" href="/">Back to Home</a></li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="callout large primary">
+			<div class="row column text-center">
+				<h1>Crypto</h1>
+				<h2 class="subheader">A self-contained, client-side encryption tool.</h2>
+				<form class="radio-button-container">
+				  <input class="radio-button" type="radio" value="encrypt" checked name="encryptOrDecrypt"><span class="radio-text">Encrypt</span></input><br>
+				  <input class="radio-button" type="radio" value="decrypt" name="encryptOrDecrypt"><span class="radio-text">Decrypt</span></input><br>
+				  <input class="salt-checkbox" type="checkbox" value="randomSalt" name="randomSalt"><span class="radio-text">Use random salt for encryption/decryption.</span></input><br>
+				  <h4>Text to be <span class="encrypt-or-decrypt-text">encrypted</span> here: </h4>
+				  <input type="text" name="inputText" class="inputText" autofocus/> 
+				  <div class="decrypt-input-custom-salt">
+				  		<h4>Salt to decrypt here: </h4>
+				  		<input type="text" name="inputSalt" class="inputSalt"/> 
+				  </div>
+				</form>
+				<button class="blue button encrypt-decrypt">Encrypt/Decrypt</button>
+				<div class="result">
+					<h6>Your <span class="encrypt-or-decrypt-text">encrypted</span> text:</h6>
+					<p class="encrypt-decrypt-output">...</p>
+				</div>
+				<div class="encrypt-result-salt">
+					<h6>Your random salt. (SAVE THIS, YOU'LL NEED IT FOR DECRYPTION)</h6>
+					<p class="encrypt-result-salt-output">...</p>
+				</div>
+			</div>
+		</div>
+		<script src="assets/js/foundation.js"></script>
+		<script>
+			$(document).foundation();
+		</script>
+		<script type=/assets/zcom.js"></script>
+
+
+	</body>	
+</html>
